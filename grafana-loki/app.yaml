@@ -2,19 +2,24 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: grafana-loki
-  namespace: grafana-loki
+  namespace: argocd
 spec:
-  project: grafana-loki
+  project: cluster
   source:
     chart: loki-stack
     repoURL: https://grafana.github.io/helm-charts
     targetRevision: 2.9.9
     helm:
-      releaseName: loki-stack
       valueFiles:
-      - values.yaml
-
+      - $values/grafana-loki/values.yaml
+  - repoURL: https://github.com/jperson/argobootstrap.git
+    targetRevision: HEAD
+    ref: values
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: grafana-loki
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
 

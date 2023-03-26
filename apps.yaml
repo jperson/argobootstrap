@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cluster
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Cluster applications
+  sourceRepos:
+  - '*'
+  destinations:
+  - namespace: '*'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: cluster
+  source:
+    repoURL: https://github.com/jperson/argobootstrap.git
+    targetRevision: HEAD
+    path: argocd/overlays/test
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: grafana-loki
+#   namespace: argocd
+# spec:
+#   project: cluster
+#   sources:
+#     repoURL: https://grafana.github.io/helm-charts
+#     chart: loki-stack
+#     targetRevision: 2.9.9
+#     helm:
+#       valueFiles:
+#       - $values/grafana-loki/values.yaml
+#   - repoURL: https://github.com/jperson/argobootstrap.git
+#     targetRevision: HEAD
+#     ref: values
+#   destination:
+#     server: "https://kubernetes.default.svc"
+#     namespace: argocd
+#   syncPolicy:
+#     automated:
+#       selfHeal: true
+#       prune: true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: grafana-loki
+#   namespace: argocd
+#   finalizers:
+#     - resources-finalizer.argocd.argoproj.io
+# spec:
+#   project: cluster
+#   source:
+#     chart: loki-stack
+#     repoURL: https://github.com/jperson/argobootstrap.git
+#     targetRevision: 2.9.9
+#     path: loki-stack
+#     helm:
+#       releaseName: loki-stack
+#       valueFiles:
+#       - values.yaml
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: argocd
+#   syncPolicy:
+#     automated:
+#       selfHeal: true
+#       prune: true

@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  project: cluster
+  sources:
+  - repoURL: https://grafana.github.io/helm-charts
+    chart: grafana
+    targetRevision: 6.52.4
+    helm:
+      valueFiles:
+      - $values/grafana/values.yaml
+  - repoURL: https://github.com/jperson/argobootstrap.git
+    targetRevision: HEAD
+    ref: values
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-loki
+  namespace: argocd
+spec:
+  project: cluster
+  sources:
+  - repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: 2.9.9
+    helm:
+      valueFiles:
+      - $values/grafana-loki/values.yaml
+  - repoURL: https://github.com/jperson/argobootstrap.git
+    targetRevision: HEAD
+    ref: values
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
